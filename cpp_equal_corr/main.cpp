@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <tuple>
+#include <unistd.h>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -15,7 +17,7 @@ using namespace std::chrono;
 mt19937 rng;
 
 // Function to create states
-vector<vector<vector<int8_t>>> create_states(int length, double gamma, int seed, int num) {
+vector<vector<vector<int8_t>>> create_states(int length, double gamma, int num) {
     double p_xx = (-1 + sqrt(gamma)) / (2 * gamma - 2);
     int n10 = static_cast<int>(length * (0.5 - p_xx));
 
@@ -33,7 +35,7 @@ vector<vector<vector<int8_t>>> create_states(int length, double gamma, int seed,
         for (int i = n10; i < 2 * n10; ++i) {
             state[positions[i]][1][n] = 1;
         }
-        for (int i = 2 * n10; i < length/2 + n10; ++i) {
+        for (int i = 2 * n10; i < length / 2 + n10; ++i) {
             state[positions[i]][0][n] = 1;
             state[positions[i]][1][n] = 1;
         }
@@ -43,7 +45,7 @@ vector<vector<vector<int8_t>>> create_states(int length, double gamma, int seed,
 }
 
 // Function to update states synchronously
-void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>>& state) {
+void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>> &state) {
     int length = state.size();
     int num = state[0][0].size();
 
@@ -52,28 +54,27 @@ void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>>& 
 
     for (int k = 0; k < length * 2 * del_t; ++k) {
         int pos1 = pos_dist(rng);
-        int sysindex1 = pos1 / length;
+        int sys_index_1 = pos1 / length;
         pos1 = pos1 % length;
-        int pos2 = (length + pos1 + 1 - 2 * sysindex1) % length;
+        int pos2 = (length + pos1 + 1 - 2 * sys_index_1) % length;
 
         if (random_dist(rng) <= gamma) {
             for (int n = 0; n < num; ++n) {
-                if (state[pos1][sysindex1][n] == 1) {
-                    if (state[pos2][sysindex1][n] == 0) {
-                        state[pos1][sysindex1][n] = 0;
-                        state[pos2][sysindex1][n] = 1;
+                if (state[pos1][sys_index_1][n] == 1) {
+                    if (state[pos2][sys_index_1][n] == 0) {
+                        state[pos1][sys_index_1][n] = 0;
+                        state[pos2][sys_index_1][n] = 1;
                     }
                 }
             }
-        }
-        else {
-            int sysindex2 = (sysindex1 + 1) % 2;
+        } else {
+            int sys_index_2 = (sys_index_1 + 1) % 2;
             for (int n = 0; n < num; ++n) {
-                if (state[pos1][sysindex1][n] == 1) {
-                    if (state[pos2][sysindex1][n] == 0) {
-                        if (state[pos1][sysindex2][n] * (1 - state[pos2][sysindex2][n]) == 0) {
-                            state[pos1][sysindex1][n] = 0;
-                            state[pos2][sysindex1][n] = 1;
+                if (state[pos1][sys_index_1][n] == 1) {
+                    if (state[pos2][sys_index_1][n] == 0) {
+                        if (state[pos1][sys_index_2][n] * (1 - state[pos2][sys_index_2][n]) == 0) {
+                            state[pos1][sys_index_1][n] = 0;
+                            state[pos2][sys_index_1][n] = 1;
                         }
                     }
                 }
@@ -82,27 +83,23 @@ void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>>& 
     }
 }
 
-double compute_mean(const vector<double>& vec) {
-    return accumulate(vec.begin(), vec.end(), 0.0) / vec.size();
-}
 
-
-tuple<int, int> compute_correlator(const vector<vector<vector<int8_t>>>& state,
-                         const vector<vector<vector<int8_t>>>& state_t) {
+tuple<int, int> compute_correlation(const vector<vector<vector<int8_t>>> &state,
+                                    const vector<vector<vector<int8_t>>> &state_t) {
     int res1 = 0, res2 = 0;
     for (size_t n = 0; n < state[0][0].size(); ++n) {
         for (size_t j = 0; j < state.size(); ++j) {
             res1 += state[j][0][n] * state_t[j][0][n] + state[j][1][n] * state_t[j][1][n];
-            res1 += (1-state[j][0][n]) * (1-state_t[j][0][n]) + (1-state[j][1][n]) * (1-state_t[j][1][n]);
+            res1 += (1 - state[j][0][n]) * (1 - state_t[j][0][n]) + (1 - state[j][1][n]) * (1 - state_t[j][1][n]);
 
             res2 += state[j][0][n] * state_t[j][1][n] + state[j][1][n] * state_t[j][0][n];
-            res2 += (1-state[j][0][n]) * (1-state_t[j][1][n]) + (1-state[j][1][n]) * (1-state_t[j][0][n]);
+            res2 += (1 - state[j][0][n]) * (1 - state_t[j][1][n]) + (1 - state[j][1][n]) * (1 - state_t[j][0][n]);
         }
     }
-    return make_tuple(res1,res2);
+    return make_tuple(res1, res2);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // Read input arguments
     if (argc < 6) {
         cerr << "Usage: " << argv[0] << " <seed> <num> <gamma> <length> <t_max>" << endl;
@@ -120,42 +117,67 @@ int main(int argc, char* argv[]) {
 
     // Record start time for state creation
     auto start_create = high_resolution_clock::now();
-    auto state = create_states(length, gamma, seed, num);
+    auto state = create_states(length, gamma, num);
     auto end_create = high_resolution_clock::now();
     duration<double> duration_create = end_create - start_create;
 
     // Record start time for state update
     auto start_update = high_resolution_clock::now();
+
+    duration<double> duration_update = start_update - start_update;
+    duration<double> duration_record = start_update - start_update;
+
     vector<vector<vector<int8_t>>> state_t = state;
     vector<vector<int>> corr(t_max, vector<int>(2, 0.0));
 
     for (int t = 0; t < t_max; ++t) {
+        start_update = high_resolution_clock::now();
         update_state_sync(1, gamma, state_t);
-        auto res = compute_correlator(state, state_t);
+        duration_update += high_resolution_clock::now() - start_update;
+
+        start_update = high_resolution_clock::now();
+        auto res = compute_correlation(state, state_t);
+        duration_record += high_resolution_clock::now() - start_update;
 
         corr[t][0] = get<0>(res) - length * num;
         corr[t][1] = get<1>(res) - length * num;
     }
 
-    auto end_update = high_resolution_clock::now();
-    duration<double> duration_update = end_update - start_update;
+    duration<double> total_duration = high_resolution_clock::now() - start_create;
 
-    // Save runtime information
-    ofstream runtime_file("runtime_info_seed_" + to_string(seed) + ".txt");
-    runtime_file << fixed << setprecision(6);
-    runtime_file << "Time taken by create_states: " << duration_create.count() << " seconds\n";
-    runtime_file << "Time taken by update_state_sync: " << duration_update.count() << " seconds\n";
 
-    // Calculate memory usage (rough estimation)
-    size_t memory_used = length * 2 * num * sizeof(int8_t);
-    runtime_file << "Memory used for storing states: " << memory_used << " bytes\n";
-    runtime_file.close();
+    // create directory if it doesn't exist for results
+    string sim_base = "gam_" + to_string(int(gamma * 1000))
+                      + "_len_" + to_string(length)
+                      + "_t_" + to_string(t_max)
+                      + "_num_" + to_string(num);
+
+    // Check if the folder already exists
+    if (access(sim_base.c_str(), F_OK) != 0) {
+        // Folder doesn't exist, create it
+        if (mkdir(sim_base.c_str(), 0777) == 0) {
+            std::cout << "Folder created successfully." << std::endl;
+        } else {
+            std::cerr << "Error creating folder." << std::endl;
+            return 1;
+        }
+    } else {
+        std::cout << "Folder already exists." << std::endl;
+    }
+
+
 
     // Save correlator data
-    ofstream corr_file("corr_seed_" + to_string(seed) + ".txt");
+    ofstream corr_file(sim_base + "/" + to_string(seed) + "_" + sim_base + ".txt");
     corr_file << fixed << setprecision(6);
-    for (const auto& row : corr) {
-        for (const auto& val : row) {
+    corr_file << "# Total time: " << total_duration.count() << " seconds\n";
+    corr_file << "# Time taken by create_states: " << duration_create.count() << " seconds\n";
+    corr_file << "# Time taken by update_state_sync: " << duration_update.count() << " seconds\n";
+    corr_file << "# Time taken by recording correlation: " << duration_record.count() << " seconds\n";
+
+
+    for (const auto &row: corr) {
+        for (const auto &val: row) {
             corr_file << val << ' ';
         }
         corr_file << '\n';
