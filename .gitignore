@@ -1,3 +1,4 @@
+venv/
 cpp_equal_corr/program
 cpp_equal_corr/gam_*/
 Burgers_data/
