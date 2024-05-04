@@ -3,3 +3,7 @@ cpp_equal_corr/gam_*/
 Burgers_data/
 cmake-build-debug/
 .idea
+UMBILIC_TWO_DIR/
+TWO_DIR*/
+figures_temp/
+data/
