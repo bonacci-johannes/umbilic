@@ -1,6 +1,7 @@
 venv/
 cpp_equal_corr/program
 cpp_equal_corr/gam_*/
+cpp_equal_corr/umbilic_two_dir_corr
 Burgers_data/
 cmake-build-debug/
 .idea

@@ -52,30 +52,34 @@ void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>> &
     uniform_int_distribution<int> pos_dist(0, length * 2 - 1);
     uniform_real_distribution<double> random_dist(0.0, 1.0);
 
+    // Generating all needed random values at once
+    vector<double> random_values(length * 2 * del_t);
+    generate(random_values.begin(), random_values.end(), [&]() { return random_dist(rng); });
+
     for (int k = 0; k < length * 2 * del_t; ++k) {
         int pos1 = pos_dist(rng);
         int sys_index_1 = pos1 / length;
-        pos1 = pos1 % length;
+        pos1 %= length;
         int pos2 = (length + pos1 + 1 - 2 * sys_index_1) % length;
 
-        if (random_dist(rng) <= gamma) {
+        if (random_values[k] <= gamma) {
             for (int n = 0; n < num; ++n) {
-                if (state[pos1][sys_index_1][n] == 1) {
-                    if (state[pos2][sys_index_1][n] == 0) {
-                        state[pos1][sys_index_1][n] = 0;
-                        state[pos2][sys_index_1][n] = 1;
-                    }
+                int8_t &src = state[pos1][sys_index_1][n];
+                int8_t &dst = state[pos2][sys_index_1][n];
+                if (src * (1 - dst) == 1) {
+                    src = 0;
+                    dst = 1;
                 }
             }
         } else {
             int sys_index_2 = (sys_index_1 + 1) % 2;
             for (int n = 0; n < num; ++n) {
-                if (state[pos1][sys_index_1][n] == 1) {
-                    if (state[pos2][sys_index_1][n] == 0) {
-                        if (state[pos1][sys_index_2][n] * (1 - state[pos2][sys_index_2][n]) == 0) {
-                            state[pos1][sys_index_1][n] = 0;
-                            state[pos2][sys_index_1][n] = 1;
-                        }
+                int8_t &src = state[pos1][sys_index_1][n];
+                int8_t &dst = state[pos2][sys_index_1][n];
+                if (src * (1 - dst) == 1) {
+                    if (state[pos1][sys_index_2][n] * (1 - state[pos2][sys_index_2][n]) == 0) {
+                        src = 0;
+                        dst = 1;
                     }
                 }
             }
@@ -182,7 +186,6 @@ int main(int argc, char *argv[]) {
     corr_file << "# Time taken by create_states: " << duration_create.count() << " seconds\n";
     corr_file << "# Time taken by update_state_sync: " << duration_update.count() << " seconds\n";
     corr_file << "# Time taken by recording correlation: " << duration_record.count() << " seconds\n";
-    corr_file << "# bool size: " << sizeof(bool) << " bit\n";
 
 
     for (const auto &row: corr) {

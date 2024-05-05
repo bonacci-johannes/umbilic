@@ -8,7 +8,7 @@ CXXFLAGS = -O2 -std=c++11
 SRC = main.cpp
 
 # Executable name
-EXEC = program
+EXEC = umbilic_two_dir_corr
 
 # Makefile targets
 all: $(EXEC)
