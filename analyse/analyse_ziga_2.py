@@ -16,9 +16,9 @@ nsam = 30
 
 # %% load cpp data
 gamma = 0.25
-corr, time = load_cpp_data(base_root='cpp_equal_corr', gamma=gamma, length=50000, t_max=10000, num=50)
+corr, time = load_cpp_data(base_root='cpp_equal_corr', gamma=gamma, length=100000, t_max=1000, num=50)
 smooth_rate = 0.01
-nsam = 5
+nsam = 20
 
 # %% evaluate basic statistics
 corr_mean = numpy.mean(corr, axis=0)
@@ -41,7 +41,7 @@ for n in tqdm.tqdm(range(nsam)):
             z_exp=1.5)
 
 # %% plot the data
-f_x = 3
+f_x = 1.5
 fig, axs = plt.subplots(num=0, nrows=3, ncols=1, sharex='all', squeeze=True, figsize=(4 * f_x, f_x * 6))
 
 for m, col in zip(range(2), ['tab:blue', 'tab:orange']):
@@ -80,4 +80,9 @@ axs[1].set_xscale('log')
 axs[1].set_ylim([1.25, 1.75])
 axs[2].set_ylim(3 * numpy.array([-1, 1]))
 axs[2].set_xlabel('t')
+
+axs[0].set_ylabel('$S_{i}$')
+axs[1].set_ylabel('$z_i(t)$')
+axs[2].set_ylabel('$(S_{\mathrm{raw}} - S_{\mathrm{smooth}}) / \sigma$')
+#plt.savefig('figures_temp/z_t_fit.png')
 plt.show()
