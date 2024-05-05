@@ -87,17 +87,25 @@ void update_state_sync(int del_t, double gamma, vector<vector<vector<int8_t>>> &
 tuple<int, int> compute_correlation(const vector<vector<vector<int8_t>>> &state,
                                     const vector<vector<vector<int8_t>>> &state_t) {
     int res1 = 0, res2 = 0;
-    for (size_t n = 0; n < state[0][0].size(); ++n) {
-        for (size_t j = 0; j < state.size(); ++j) {
-            res1 += state[j][0][n] * state_t[j][0][n] + state[j][1][n] * state_t[j][1][n];
-            res1 += (1 - state[j][0][n]) * (1 - state_t[j][0][n]) + (1 - state[j][1][n]) * (1 - state_t[j][1][n]);
+    size_t layers = state.size(), height = state[0].size(), width = state[0][0].size();
 
-            res2 += state[j][0][n] * state_t[j][1][n] + state[j][1][n] * state_t[j][0][n];
-            res2 += (1 - state[j][0][n]) * (1 - state_t[j][1][n]) + (1 - state[j][1][n]) * (1 - state_t[j][0][n]);
+    for (size_t j = 0; j < layers; ++j) {
+        for (size_t n = 0; n < width; ++n) {
+            int state_j0n = state[j][0][n];
+            int state_j1n = state[j][1][n];
+            int state_t_j0n = state_t[j][0][n];
+            int state_t_j1n = state_t[j][1][n];
+
+            res1 += state_j0n * state_t_j0n + state_j1n * state_t_j1n;
+            res1 += (1 - state_j0n) * (1 - state_t_j0n) + (1 - state_j1n) * (1 - state_t_j1n);
+
+            res2 += state_j0n * state_t_j1n + state_j1n * state_t_j0n;
+            res2 += (1 - state_j0n) * (1 - state_t_j1n) + (1 - state_j1n) * (1 - state_t_j0n);
         }
     }
     return make_tuple(res1, res2);
 }
+
 
 int main(int argc, char *argv[]) {
     // Read input arguments
@@ -174,6 +182,7 @@ int main(int argc, char *argv[]) {
     corr_file << "# Time taken by create_states: " << duration_create.count() << " seconds\n";
     corr_file << "# Time taken by update_state_sync: " << duration_update.count() << " seconds\n";
     corr_file << "# Time taken by recording correlation: " << duration_record.count() << " seconds\n";
+    corr_file << "# bool size: " << sizeof(bool) << " bit\n";
 
 
     for (const auto &row: corr) {
