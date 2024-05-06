@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 #include <chrono>
+#include <cstring>
 #include <numeric>
 #include <algorithm>
 #include <iomanip>
@@ -15,6 +16,39 @@ using namespace std::chrono;
 
 // Global random number generator
 mt19937 rng;
+
+
+// function creating the result path recursively
+bool createDirectoryRecursively(const std::string &path) {
+    size_t pos = 0;
+    std::string currentPath;
+
+    // Handle absolute path starting with '/'
+    if (path[0] == '/') {
+        currentPath = "/";
+    }
+
+    while ((pos = path.find_first_of('/', pos)) != std::string::npos) {
+        currentPath += path.substr(currentPath.length(), pos - currentPath.length() + 1);
+        if (currentPath.length() > 1 && access(currentPath.c_str(), F_OK) != 0) { // Directory does not exist
+            if (mkdir(currentPath.c_str(), 0777) != 0 && errno != EEXIST) { // Try creating directory
+                std::cerr << "Failed to create directory '" << currentPath << "': " << strerror(errno) << std::endl;
+                return false;
+            }
+        }
+        pos++;
+    }
+
+    // Create last segment if it ends without a '/'
+    if (pos != path.length() + 1) {
+        if (mkdir(path.c_str(), 0777) != 0 && errno != EEXIST) {
+            std::cerr << "Failed to create directory '" << path << "': " << strerror(errno) << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
 
 // Function to create states
 vector<vector<vector<int8_t>>> create_states(int length, double gamma, int num) {
@@ -113,8 +147,8 @@ tuple<int, int> compute_correlation(const vector<vector<vector<int8_t>>> &state,
 
 int main(int argc, char *argv[]) {
     // Read input arguments
-    if (argc < 6) {
-        cerr << "Usage: " << argv[0] << " <seed> <num> <gamma> <length> <t_max>" << endl;
+    if (argc < 7) {
+        cerr << "Usage: " << argv[0] << " <seed> <num> <gamma> <length> <t_max> <dest_path>" << endl;
         return 1;
     }
 
@@ -123,6 +157,7 @@ int main(int argc, char *argv[]) {
     double gamma = stod(argv[3]);
     int length = stoi(argv[4]);
     int t_max = stoi(argv[5]);
+    string dest_path = argv[6];
 
     // Initialize the random number generator with the seed
     rng.seed(seed);
@@ -164,23 +199,26 @@ int main(int argc, char *argv[]) {
                       + "_t_" + to_string(t_max)
                       + "_num_" + to_string(num);
 
+    // Remove trailing '/' if it exists
+    if (dest_path[-1] == '/') dest_path = dest_path.substr(0, dest_path.size() - 1);
+    dest_path = dest_path + "/" + sim_base;
+
     // Check if the folder already exists
-    if (access(sim_base.c_str(), F_OK) != 0) {
+    if (access(dest_path.c_str(), F_OK) != 0) {
         // Folder doesn't exist, create it
-        if (mkdir(sim_base.c_str(), 0777) == 0) {
-            std::cout << "Folder created successfully." << std::endl;
-        } else {
-            std::cerr << "Error creating folder." << std::endl;
+        if (!createDirectoryRecursively(dest_path)) {
+            std::cerr << "Error creating directory structure for: " << dest_path << std::endl;
             return 1;
         }
+        std::cout << "Directories created successfully at: " << dest_path << std::endl;
+
     } else {
         std::cout << "Folder already exists." << std::endl;
     }
 
 
-
     // Save correlator data
-    ofstream corr_file(sim_base + "/" + to_string(seed) + "_" + sim_base + ".txt");
+    ofstream corr_file(dest_path + "/" + to_string(seed) + "_" + sim_base + ".txt");
     corr_file << fixed << setprecision(6);
     corr_file << "# Total time: " << total_duration.count() << " seconds\n";
     corr_file << "# Time taken by create_states: " << duration_create.count() << " seconds\n";
