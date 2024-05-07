@@ -17,7 +17,9 @@ def z_func(time,
         x=time_log,
         y=y * time_scale,
         lam=s_lambda,
-        w=smooth_rate / numpy.square(y_std_err * time_scale))(time_log) / time_scale
+        w=(1 / time) * numpy.square(1 / (smooth_rate * y_std_err * time_scale))
+    )(time_log)
+    corr_smooth /= time_scale
 
     # calculate derivative and extract z
     spl_tck_diag = scipy.interpolate.splrep(time_log, corr_smooth)

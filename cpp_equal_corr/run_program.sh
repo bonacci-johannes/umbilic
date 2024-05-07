@@ -4,7 +4,7 @@
 num=50
 length=100000
 t_max=10000
-total_jobs=128  # Total number of jobs to start
+total_jobs=256  # Total number of jobs to start
 max_concurrent_jobs=64  # Maximum number of concurrent jobs
 dest_path="gam_series"  # Path to save output files, choose '.' for current directory
 
@@ -21,8 +21,8 @@ function check_jobs() {
 }
 
 # Loop over gamma values from 0.1 to 1.0 in steps of 0.05
-for gamma in $(seq 0.75 0.05 1.0)
-# for gamma in 0.1
+for gamma in $(seq 0.1 0.05 0.951)
+#for gamma in 0.999999999999
 do
     # Loop to start all jobs for the current gamma
     for ((i=1; i<=total_jobs; i++))
