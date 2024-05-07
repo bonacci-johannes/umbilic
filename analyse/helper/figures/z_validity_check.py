@@ -1,7 +1,7 @@
 import numpy
 import matplotlib.pyplot as plt
 
-from data_loader import DataCorr
+from analyse.data_loader import DataCorr
 
 
 # plot the data
@@ -15,7 +15,7 @@ def z_fit_check_figure(time, corr, corr_smooth, z_dyn_exp,
     nsam = corr_smooth.shape[0]
 
     f_x = 1.5
-    fig, axs = plt.subplots(nrows=3, ncols=1, sharex='all', squeeze=True, figsize=(4 * f_x, f_x * 6))
+    fig, axs = plt.subplots(nrows=3, ncols=1, sharex='all', squeeze=True, figsize=(4 * f_x, f_x * 5.))
 
     for m, col in zip(range(2), ['tab:blue', 'tab:orange']):
         # plot raw mean and spline fits

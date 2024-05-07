@@ -4,7 +4,7 @@ import numpy
 class DataCorr:
     time: numpy.ndarray
     corr: numpy.ndarray
-    smooth_rate: float
+    sigma_weight: float
     nsam: int
     s_lambda: float
     sub_corr_smooth: numpy.ndarray
