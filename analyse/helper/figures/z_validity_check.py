@@ -27,7 +27,7 @@ def z_fit_check_figure(time, corr, corr_smooth, z_dyn_exp,
         # plot dynamical exponent z
         for n in range(nsam):
             axs[1].plot(time, z_dyn_exp[n, :, m], ':', color=col, alpha=0.2)
-        axs[1].plot(time, numpy.mean(z_dyn_exp, axis=0)[:, m], '.-', color=col, alpha=1)
+        axs[1].plot(time, numpy.mean(z_dyn_exp, axis=0)[:, m], '-', color=col, alpha=1)
         axs[1].fill_between(time,
                             numpy.mean(z_dyn_exp, axis=0)[:, m]
                             - 3 * numpy.std(z_dyn_exp, axis=0)[:, m] / numpy.sqrt(nsam),
@@ -37,12 +37,12 @@ def z_fit_check_figure(time, corr, corr_smooth, z_dyn_exp,
         axs[1].plot([time[0], time[-1]], [1.5, 1.5], '--', color='black', alpha=0.5)
 
         # plot z-transformed fitted data (z-transform with gaussian error)
-        for n in range(nsam):
-            axs[2].plot(time, (corr_mean[m, :] - corr_smooth[n, :, m]) / corr_std_err[m, :],
-                        '.-', color=col, alpha=0.1)
+        # for n in range(nsam):
+        #     axs[2].plot(time, (corr_mean[m, :] - corr_smooth[n, :, m]) / corr_std_err[m, :],
+        #                 '.-', color=col, alpha=0.1)
 
         axs[2].plot(time, (corr_mean[m, :] - numpy.mean(corr_smooth, axis=0)[:, m]) / corr_std_err[m, :],
-                    '.-', color=col, alpha=1)
+                    '.-', color=col, alpha=0.5)
 
         axs[2].plot([time[0], time[-1]], [0, 0], '--', color='black', alpha=0.5)
 

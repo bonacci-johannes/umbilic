@@ -71,4 +71,4 @@ class Struct:
 
         # compute maxima of eigenmodes
         self.s_max = self.s_smooth[:, self.s_smooth.shape[1] // 2, :]
-        self.s_max_std = self.s_smooth_std_err[:, self.s_smooth_std_err.shape[1] // 2, :]
+        self.s_max_std_err = self.s_smooth_std_err[:, self.s_smooth_std_err.shape[1] // 2, :]

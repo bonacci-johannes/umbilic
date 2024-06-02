@@ -47,11 +47,11 @@ for n in range(2):
          (numpy.log(struc.s_max[1:, n]) - numpy.log(struc.s_max[:-1, n])))
 
     z1 = (-numpy.diff(numpy.log(struc.times)) /
-          (numpy.log((struc.s_max + c_alpha * struc.s_max_std)[1:, n]) - numpy.log(
-              (struc.s_max - c_alpha * struc.s_max_std)[:-1, n])))
+          (numpy.log((struc.s_max + c_alpha * struc.s_max_std_err)[1:, n]) - numpy.log(
+              (struc.s_max - c_alpha * struc.s_max_std_err)[:-1, n])))
     z2 = (-numpy.diff(numpy.log(struc.times)) /
-          (numpy.log((struc.s_max - c_alpha * struc.s_max_std)[1:, n]) - numpy.log(
-              (struc.s_max + c_alpha * struc.s_max_std)[:-1, n])))
+          (numpy.log((struc.s_max - c_alpha * struc.s_max_std_err)[1:, n]) - numpy.log(
+              (struc.s_max + c_alpha * struc.s_max_std_err)[:-1, n])))
 
     plt.plot(numpy.log(struc.times[1:]),
              z, '.-', label=f'$S_{n + 1}$')
