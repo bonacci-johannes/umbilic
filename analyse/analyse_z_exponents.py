@@ -38,7 +38,7 @@ corr, time = load_cpp_data(base_root=base_root, gamma=gamma, length=length, t_ma
 cut_idx = numpy.searchsorted(time, cuttime)
 
 # %%
-smooth_rate = 1.0
+smooth_rate = 0.95
 s_lambda = 0
 time = time[cut_idx:]
 corr = corr[:, :, cut_idx:]

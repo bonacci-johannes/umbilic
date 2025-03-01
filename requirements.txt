@@ -1,4 +1,6 @@
-numpy
-scipy
-tqdm
-matplotlib
+numpy~=2.2.3
+scipy~=1.15.2
+tqdm~=4.67.1
+matplotlib~=3.10.0
+statsmodels~=0.14.4
+csaps~=1.2.0
