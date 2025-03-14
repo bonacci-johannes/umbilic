@@ -7,6 +7,9 @@ from analyse.data_loader.cpp_loader import load_cpp_data
 from analyse.helper.figures.z_validity_check import z_fit_check_from_dclass
 from analyse.data_loader.data_corr_z import DataCorrZ
 
+import matplotlib as mpl
+mpl.use('Qt5Agg')
+
 # %% load old data for comparison
 struc_max = numpy.loadtxt('test_python_eval/test_data/gamma_025_old_struc_max.txt')
 

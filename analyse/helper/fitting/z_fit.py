@@ -1,5 +1,6 @@
 import warnings
 
+import csaps
 import numpy
 import scipy
 import statsmodels.api as sm
@@ -83,3 +84,29 @@ def z_fit_linear(chunk_idx, time, y, y_err, eps_break=1e-5, rec_max=10, alpha_0=
         z_smooth[n] = 1 / alpha_fit
 
     return s_smooth, z_smooth
+
+
+def z_func_csaps(time,
+                 y,
+                 y_std_err,
+                 sigma_weight=1.,
+                 z_0=3 / 2,
+                 smooth=0.5):
+    # transform data
+    time_log = numpy.log(time)
+    y_rescale = numpy.power(time, 1 / z_0)
+
+    # calculate log-log smoothed spline
+
+    spl_csaps = csaps.csaps(xdata=time_log,
+                            ydata=y * y_rescale,
+                            smooth=smooth,
+                            weights=((time[1] - time[0]) / time) / numpy.square(sigma_weight * y_std_err * y_rescale),
+                            ).spline
+
+    # calculate smoothed result
+    corr_smooth = spl_csaps(time_log)
+    # calculate derivative and extract z
+    z = 1 / (1 / z_0 - spl_csaps.derivative(nu=1)(time_log) / corr_smooth)
+
+    return corr_smooth / y_rescale, z, spl_csaps

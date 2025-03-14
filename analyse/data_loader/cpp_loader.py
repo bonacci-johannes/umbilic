@@ -1,11 +1,12 @@
 import glob
 import numpy
 import re
-
+import os
+import tqdm
 
 def read_data_file(file_path):
     # extract gamma, length, num from file_path
-    file_name = file_path.split('/')[-1]
+    file_name = os.path.split(file_path)[-1]
     file_sp = re.split(r"[_.]+", file_name)
     gamma = float(file_sp[2]) / 1000
     length = int(file_sp[4])
@@ -53,7 +54,7 @@ def load_cpp_data(base_root, gamma, length, num, t_max):
     time = numpy.arange(1, t_max + 1)
     corr = numpy.zeros((len(record_files), 2, t_max))
 
-    for n in range(len(record_files)):
+    for n in tqdm.tqdm(range(len(record_files))):
         corr[n, :, :] = read_data_file(record_files[n])
 
     return corr, time
