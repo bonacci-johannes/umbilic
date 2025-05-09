@@ -51,8 +51,8 @@ class Struct:
             std_diag = 0.5 * numpy.std(self.t_s_bar[time][:, 0, :], axis=1)
             std_off = 0.5 * numpy.std(self.t_s_bar[time][:, 1, :], axis=1)
             for n in range(len(record_files)):
-                spl_tck_diag = scipy.interpolate.splrep(self.t_x[time], self.t_s_bar[time][:, 0, n], w=1 / std_diag)
-                spl_tck_off = scipy.interpolate.splrep(self.t_x[time], self.t_s_bar[time][:, 1, n], w=1 / std_off)
+                spl_tck_diag = scipy.interpolate.splrep(self.t_x[time], self.t_s_bar[time][:, 0, n], w=2 / std_diag)
+                spl_tck_off = scipy.interpolate.splrep(self.t_x[time], self.t_s_bar[time][:, 1, n], w=2 / std_off)
                 self.s_bar_smooth_single[nt, :, 0, n] = scipy.interpolate.splev(self.x_grid[:, nt], spl_tck_diag)
                 self.s_bar_smooth_single[nt, :, 1, n] = scipy.interpolate.splev(self.x_grid[:, nt], spl_tck_off)
 
